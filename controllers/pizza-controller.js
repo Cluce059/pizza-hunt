@@ -4,6 +4,14 @@ const pizzaController = {
   // get all pizzas
   getAllPizza(req, res) {
     Pizza.find({})
+    //populate method guves us access to the select option
+      .populate({
+        path: 'comments',
+        //- means DONT include the following field
+        select: '-__v'
+      })
+      .select('-__v')
+      .sort({ _id: -1 })
       .then(dbPizzaData => res.json(dbPizzaData))
       .catch(err => {
         console.log(err);
@@ -14,7 +22,18 @@ const pizzaController = {
   // get one pizza by id
   getPizzaById({ params }, res) {
     Pizza.findOne({ _id: params.id })
-      .then(dbPizzaData => res.json(dbPizzaData))
+    .populate({
+      path: 'comments',
+      select: '-__v'
+    })
+    .select('-__v')
+      .then(dbPizzaData => {
+        if(!dbPizzaData){
+          res.staus(404).json({ message: 'No pizza found with this id'});
+          return;
+        }
+        res.json(dbPizzaData)
+      })
       .catch(err => {
         console.log(err);
         res.sendStatus(400);
